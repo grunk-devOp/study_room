@@ -74,9 +74,9 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var id int
-	var hashedPassword, role string
-	err := h.DB.QueryRow(`SELECT id, password, role FROM users WHERE email = ?`, body.Email).
-		Scan(&id, &hashedPassword, &role)
+	var name, email, hashedPassword, role string
+	err := h.DB.QueryRow(`SELECT id, name, email, password, role FROM users WHERE email = ?`, body.Email).
+		Scan(&id, &name, &email, &hashedPassword, &role)
 	if err == sql.ErrNoRows {
 		http.Error(w, "Account not found", http.StatusUnauthorized)
 		return
@@ -98,5 +98,10 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.JSON(w, http.StatusOK, map[string]string{"token": token})
+	utils.JSON(w, http.StatusOK, map[string]string{
+		"token": token,
+		"name":  name,
+		"email": email,
+		"role":  role,
+	})
 }
