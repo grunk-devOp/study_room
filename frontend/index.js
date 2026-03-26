@@ -45,6 +45,17 @@ loginForm.addEventListener("submit", async (event) => {
 
         const data = await res.json();
         localStorage.setItem("token", data.token);
+        localStorage.setItem("user_email", (data.email || email).trim());
+
+        if ((data.name || "").trim()) {
+            localStorage.setItem("user_name", data.name.trim());
+        } else {
+            localStorage.removeItem("user_name");
+        }
+
+        localStorage.removeItem("registered_name_hint");
+        localStorage.removeItem("registered_email_hint");
+
         window.location.href = "dashboard.html";
     } catch (err) {
         toggleAlert(loginError, err.message || "Login failed.");
@@ -81,6 +92,8 @@ registerForm.addEventListener("submit", async (event) => {
         }
 
         registerForm.reset();
+        localStorage.setItem("registered_name_hint", name);
+        localStorage.setItem("registered_email_hint", email);
         toggleAlert(registerSuccess, "Registration successful. Please login.");
         bootstrap.Tab.getOrCreateInstance(loginTabBtn).show();
     } catch (err) {

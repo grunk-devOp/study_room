@@ -52,6 +52,8 @@ registerForm.addEventListener("submit", async (event) => {
         }
 
         showSuccess("Registration successful. Redirecting to login...");
+        localStorage.setItem("registered_name_hint", name);
+        localStorage.setItem("registered_email_hint", email);
         registerForm.reset();
         setTimeout(() => {
             window.location.href = "login.html";
