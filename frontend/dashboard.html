@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .app-shell {
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 88px;
+            min-width: 88px;
+            border-right: 1px solid #e9ecef;
+            background: #f8f9fa;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .sidebar .nav-link {
+            color: #6c757d;
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin: 0 auto;
+        }
+
+        .sidebar .nav-link.active {
+            color: #0d6efd;
+            background: #e7f1ff;
+        }
+
+        .sidebar-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #dee2e6;
+            color: #495057;
+            font-size: 0.78rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            border: 2px solid #dee2e6;
+            transition: border-color 0.15s ease;
+            user-select: none;
+        }
+
+        .sidebar-avatar:hover {
+            border-color: #adb5bd;
+        }
+
+        .sidebar-avatar .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #198754;
+            border: 2px solid #f8f9fa;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+        }
+
+        .sidebar-avatar-popup {
+            display: none;
+            position: absolute;
+            left: 56px;
+            bottom: 0;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            padding: 0.6rem 0.75rem;
+            white-space: nowrap;
+            z-index: 999;
+            min-width: 160px;
+        }
+
+        .sidebar-avatar-popup.show {
+            display: block;
+        }
+
+        .sidebar-avatar-name {
+            font-size: 0.83rem;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 0.4rem;
+        }
+
+        .sidebar-avatar-email {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-bottom: 0.6rem;
+        }
+
+        .calendar-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 0.5rem;
+        }
+
+        .calendar-weekday {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #6c757d;
+            font-weight: 600;
+            padding-bottom: 0.25rem;
+        }
+
+        .calendar-day {
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            min-height: 160px;
+            padding: 0.35rem;
+            background: #fff;
+        }
+
+        .calendar-day.is-empty {
+            background: #f8f9fa;
+        }
+
+        .calendar-day.is-today {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.15);
+        }
+
+        .calendar-grid.is-week-view .calendar-day {
+            min-height: 280px;
+        }
+
+        .calendar-day-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.3rem;
+        }
+
+        .calendar-day-header {
+            font-size: 0.8rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .calendar-day-count {
+            font-size: 0.68rem;
+            color: #6c757d;
+            line-height: 1;
+        }
+
+        .calendar-day-weeklabel {
+            font-size: 0.7rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .timeline-events {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            max-height: 220px;
+            overflow-y: auto;
+            padding-right: 0.1rem;
+        }
+
+        .timeline-event {
+            border: 1px solid #e8ebef;
+            border-left-width: 4px;
+            border-radius: 8px;
+            background: #ffffff;
+            padding: 0.35rem 0.45rem;
+            cursor: pointer;
+            transition: background-color 0.15s ease, transform 0.15s ease;
+        }
+
+        .timeline-event:hover {
+            background: #f8fafc;
+            transform: translateY(-1px);
+        }
+
+        .timeline-event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.35rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .timeline-event-time {
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: #344054;
+        }
+
+        .timeline-event-room {
+            font-size: 0.78rem;
+            color: #4b5563;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .timeline-now-badge {
+            font-size: 0.62rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #0f5132;
+            background: #d7f5e4;
+            border: 1px solid #9ad8b5;
+            border-radius: 999px;
+            padding: 0.1rem 0.35rem;
+        }
+
+        .timeline-empty {
+            border: 1px dashed #d8dce1;
+            border-radius: 8px;
+            padding: 0.55rem;
+            font-size: 0.76rem;
+            color: #6b7280;
+            text-align: center;
+            background: #fafbfc;
+            cursor: pointer;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .timeline-empty:hover {
+            background: #f1f5f9;
+            border-color: #b6c2ce;
+        }
+
+        .timeline-event.status-active { border-left-color: #198754; }
+        .timeline-event.status-confirmed { border-left-color: #3b82f6; }
+        .timeline-event.status-pending { border-left-color: #ffc107; }
+        .timeline-event.status-cancelled { border-left-color: #dc3545; }
+        .timeline-event.status-default { border-left-color: #6c757d; }
+
+        .timeline-event.is-now {
+            box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.18);
+        }
+
+        .calendar-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .calendar-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.8rem;
+            color: #495057;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            display: inline-block;
+        }
+
+        .legend-active { background: #198754; }
+        .legend-upcoming { background: #3b82f6; }
+        .legend-pending { background: #ffc107; }
+        .legend-cancelled { background: #dc3545; }
+        .legend-completed { background: #6c757d; }
+
+        .booking-shell {
+            background: #f4f5f7;
+            border: 1px solid #e4e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .booking-topbar {
+            background: #ffffff;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e7eaee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .booking-view-tabs .nav-link {
+            color: #3f4752;
+            font-weight: 600;
+            border: none;
+            border-bottom: 2px solid transparent;
+            border-radius: 0;
+            padding: 0.4rem 0.6rem;
+        }
+
+        .booking-view-tabs .nav-link.active {
+            color: #2f7f32;
+            border-bottom-color: #48a247;
+            background: transparent;
+        }
+
+        .booking-filters {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid #e7eaee;
+            display: grid;
+            grid-template-columns: 150px 150px 1fr auto;
+            gap: 0.6rem;
+            background: #f4f5f7;
+        }
+
+        .booking-list-wrap {
+            padding: 0 1rem 1rem;
+        }
+
+        .booking-table-scroll {
+            height: 420px;
+            overflow-y: scroll;
+        }
+
+        .booking-table-scroll .dropdown-menu {
+            position: fixed !important;
+        }
+
+        .booking-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: #fff;
+        }
+
+        .booking-list-head {
+            background: #ffffff;
+            border: 1px solid #e7eaee;
+            border-bottom: none;
+            border-radius: 10px 10px 0 0;
+            padding: 0.6rem 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .booking-count {
+            color: #5f6b78;
+            font-size: 0.9rem;
+        }
+
+        .booking-table {
+            width: 100%;
+            border: 1px solid #e7eaee;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: #fff;
+            border-radius: 0 0 10px 10px;
+            overflow: hidden;
+        }
+
+        .booking-table thead th {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            color: #6a7280;
+            letter-spacing: 0.02em;
+            font-weight: 700;
+            padding: 0.65rem 0.8rem;
+            border-bottom: 1px solid #edf0f3;
+        }
+
+        .booking-table tbody td {
+            padding: 0.78rem 0.8rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #edf0f3;
+            font-size: 0.92rem;
+            color: #2f3640;
+        }
+
+        .booking-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .booking-date-main {
+            font-weight: 700;
+            color: #2f3640;
+            line-height: 1.1;
+        }
+
+        .booking-time-main {
+            color: #5f6b78;
+            font-size: 0.84rem;
+            margin-top: 0.2rem;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.22rem 0.56rem;
+            font-size: 0.76rem;
+            font-weight: 700;
+        }
+
+        .status-pill.status-active { background: #e5f7ec; color: #0f7b3a; }
+        .status-pill.status-confirmed { background: #e7efff; color: #2f62c6; }
+        .status-pill.status-pending { background: #fff5d9; color: #9a6a00; }
+        .status-pill.status-cancelled { background: #fde8ea; color: #b12435; }
+        .status-pill.status-default { background: #eceff2; color: #53606f; }
+
+        .timeline-pane {
+            padding: 0.9rem 1rem 1rem;
+        }
+
+        .timeline-help {
+            background: #eef5ff;
+            border: 1px solid #d8e6ff;
+            color: #264b8a;
+            border-radius: 10px;
+            padding: 0.55rem 0.7rem;
+            font-size: 0.84rem;
+            margin-bottom: 0.7rem;
+        }
+
+        .timeline-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.7rem;
+        }
+
+        .timeline-summary-chip {
+            background: #ffffff;
+            border: 1px solid #dfe5ec;
+            border-radius: 999px;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.8rem;
+            color: #344054;
+        }
+
+        @media (max-width: 991px) {
+            .booking-filters {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #bookingsCalendarGrid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            #calendarWeekdays {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="d-flex app-shell">
+    <aside class="sidebar d-flex flex-column align-items-center py-4" style="position: relative;">
+        <ul class="nav nav-pills flex-column gap-3" id="sidebarTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="dashboard-tab-btn" data-bs-toggle="pill" data-bs-target="#dashboard-tab" type="button" role="tab" aria-controls="dashboard-tab" aria-selected="true" title="Dashboard">
+                    <i class="bi bi-house-door"></i>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="calendar-tab-btn" data-bs-toggle="pill" data-bs-target="#calendar-tab" type="button" role="tab" aria-controls="calendar-tab" aria-selected="false" title="Calendar">
+                    <i class="bi bi-calendar3"></i>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="reserve-tab-btn" data-bs-toggle="pill" data-bs-target="#reserve-tab" type="button" role="tab" aria-controls="reserve-tab" aria-selected="false" title="Reserve Room">
+                    <i class="bi bi-plus-square"></i>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="faq-tab-btn" data-bs-toggle="pill" data-bs-target="#faq-tab" type="button" role="tab" aria-controls="faq-tab" aria-selected="false" title="FAQ">
+                    <i class="bi bi-question-circle"></i>
+                </button>
+            </li>
+        </ul>
+
+        <div style="margin-top: auto; position: relative;">
+            <div class="sidebar-avatar" id="sidebarAvatar" title="Account">
+                <span id="sidebarAvatarInitials">?</span>
+                <span class="status-dot"></span>
+            </div>
+            <div class="sidebar-avatar-popup" id="sidebarAvatarPopup">
+                <div class="sidebar-avatar-name" id="sidebarPopupName"></div>
+                <div class="sidebar-avatar-email" id="sidebarPopupEmail"></div>
+                <button class="btn btn-outline-danger btn-sm w-100" id="sidebarLogoutBtn">Sign out</button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-grow-1 pt-4 pb-4" style="margin-left: 48px; height: 100vh; overflow-y: scroll; padding-left: 0.75rem; padding-right: 3.5rem;">
+        <div class="tab-content" id="sidebarTabsContent">
+            <section class="tab-pane fade show active" id="dashboard-tab" role="tabpanel" aria-labelledby="dashboard-tab-btn" tabindex="0">
+                <h1 class="mb-3">Welcome, <span id="welcomeUserName">there</span>!</h1>
+                <div class="alert alert-info py-2 mb-4" role="alert">
+                    Tips: 1) Use Calendar -> Timeline View to find a day. 2) Click a booking to reuse time or click Free day to prefill reservation. 3) Finalize in Reserve Room tab.
+                </div>
+
+                <div class="booking-shell mt-4">
+                    <div class="booking-topbar">
+                        <ul class="nav booking-view-tabs">
+                            <li class="nav-item">
+                                <span class="nav-link active">
+                                    <i class="bi bi-list-ul me-1"></i>Booking Listing
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="booking-filters">
+                        <select id="listingDateFilter" class="form-select form-select-sm">
+                            <option value="all" selected>All dates</option>
+                            <option value="today">Today</option>
+                            <option value="this_week">This week</option>
+                            <option value="this_month">This month</option>
+                        </select>
+
+                        <select id="listingStatusFilter" class="form-select form-select-sm">
+                            <option value="any" selected>Status: Any</option>
+                            <option value="active">Status: Active</option>
+                            <option value="confirmed">Status: Confirmed</option>
+                            <option value="pending">Status: Pending</option>
+                            <option value="cancelled">Status: Cancelled</option>
+                            <option value="other">Status: Other</option>
+                        </select>
+
+                        <input id="listingSearchInput" type="text" class="form-control form-control-sm" placeholder="Enter keyword to search...">
+
+                        <button id="listingRefreshBtn" class="btn btn-outline-secondary btn-sm" type="button" title="Refresh">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+
+                    <div class="booking-list-wrap">
+                        <div class="booking-list-head">
+                            <div class="booking-count" id="bookingListingCount">0 bookings</div>
+                            <select id="listingSortSelect" class="form-select form-select-sm" style="width: 185px;">
+                                <option value="start_desc" selected>Sort by: Latest</option>
+                                <option value="start_asc">Sort by: Earliest</option>
+                                <option value="status">Sort by: Status</option>
+                            </select>
+                        </div>
+
+                        <div class="booking-table-scroll">
+                            <table class="booking-table">
+                                <thead>
+                                <tr>
+                                    <th style="width: 170px;">Date / Time</th>
+                                    <th>Room</th>
+                                    <th>Status</th>
+                                    <th style="width: 230px;">Details</th>
+                                    <th style="width: 70px;"></th>
+                                </tr>
+                                </thead>
+                                <tbody id="bookingListingRows">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="tab-pane fade" id="calendar-tab" role="tabpanel" aria-labelledby="calendar-tab-btn" tabindex="0">
+                <h1 class="mb-4">Booking Calendar</h1>
+                <div class="booking-shell">
+                    <div class="booking-topbar">
+                        <ul class="nav booking-view-tabs">
+                            <li class="nav-item">
+                                <span class="nav-link active">
+                                    <i class="bi bi-bar-chart-steps me-1"></i>Timeline View
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="timeline-pane">
+                            <div class="calendar-controls mb-3">
+                                <div class="btn-group" role="group" aria-label="Calendar navigation">
+                                    <button id="calendarPrevBtn" type="button" class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </button>
+                                    <button id="calendarTodayBtn" type="button" class="btn btn-outline-secondary btn-sm">Today</button>
+                                    <button id="calendarNextBtn" type="button" class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </div>
+                                <h3 id="calendarMonthLabel" class="h5 mb-0"></h3>
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <label for="calendarViewModeSelect" class="small text-muted mb-0">View</label>
+                                    <select id="calendarViewModeSelect" class="form-select form-select-sm" style="width: 110px;">
+                                        <option value="week">Week</option>
+                                        <option value="month" selected>Month</option>
+                                    </select>
+
+                                    <label for="calendarStatusFilterSelect" class="small text-muted mb-0">Status</label>
+                                    <select id="calendarStatusFilterSelect" class="form-select form-select-sm" style="width: 130px;">
+                                        <option value="all" selected>All</option>
+                                        <option value="active">Active</option>
+                                        <option value="confirmed">Confirmed</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="cancelled">Cancelled</option>
+                                        <option value="other">Other</option>
+                                    </select>
+
+                                    <label for="calendarRoomFilterSelect" class="small text-muted mb-0">Room</label>
+                                    <select id="calendarRoomFilterSelect" class="form-select form-select-sm" style="width: 170px;">
+                                        <option value="all" selected>All rooms</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="timeline-help">Tip: Click a booking to reuse its time, or click "Free day" to start a reservation for that date.</div>
+                            <div class="timeline-summary" id="timelineSummary"></div>
+
+                            <div class="calendar-legend">
+                                <span class="calendar-legend-item"><span class="legend-dot legend-active"></span>Active now</span>
+                                <span class="calendar-legend-item"><span class="legend-dot legend-upcoming"></span>Upcoming</span>
+                                <span class="calendar-legend-item"><span class="legend-dot legend-pending"></span>Pending</span>
+                                <span class="calendar-legend-item"><span class="legend-dot legend-cancelled"></span>Cancelled</span>
+                                <span class="calendar-legend-item"><span class="legend-dot legend-completed"></span>Completed</span>
+                            </div>
+
+                            <div id="calendarWeekdays" class="calendar-grid mb-2"></div>
+                            <div id="bookingsCalendarGrid" class="calendar-grid"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="tab-pane fade" id="reserve-tab" role="tabpanel" aria-labelledby="reserve-tab-btn" tabindex="0">
+                <h1 class="mb-4">Reserve Room</h1>
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="h5 mb-3">Reserve Room</h3>
+                        <form id="reservationForm" class="w-100 d-flex flex-column gap-2">
+                            <div class="row g-2">
+                                <div class="col">
+                                    <label for="roomSelect" class="form-label mb-1">Room</label>
+                                    <select id="roomSelect" class="form-select" required></select>
+                                </div>
+                                <div class="col-auto" style="min-width: 160px;">
+                                    <label for="capacityFilter" class="form-label mb-1">Min. capacity</label>
+                                    <select id="capacityFilter" class="form-select">
+                                        <option value="0" selected>Any</option>
+                                        <option value="2">2+</option>
+                                        <option value="4">4+</option>
+                                        <option value="6">6+</option>
+                                        <option value="8">8+</option>
+                                        <option value="10">10+</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="border rounded p-3 bg-light">
+                                <label class="form-label fw-semibold mb-2">Reservation time</label>
+                                <div id="reservationSummary" class="small text-muted mb-2">No date and time selected yet.</div>
+                                <div class="row g-2 mb-2">
+                                    <div class="col-12">
+                                        <label for="manualDate" class="form-label mb-1">Date</label>
+                                        <input type="date" id="manualDate" class="form-control">
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label for="manualStartTime" class="form-label mb-1">Start time</label>
+                                        <input type="time" id="manualStartTime" class="form-control" step="60">
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label for="manualEndTime" class="form-label mb-1">End time</label>
+                                        <input type="time" id="manualEndTime" class="form-control" step="60">
+                                    </div>
+                                </div>
+                                <button type="button" id="openSchedulerBtn" class="btn btn-outline-primary btn-sm">Choose date & time</button>
+                                <div class="small text-muted mt-2">You can either type date/time manually or use the scheduler.</div>
+                            </div>
+
+                            <button class="btn btn-primary mt-2">Reserve Room</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <section class="tab-pane fade" id="faq-tab" role="tabpanel" aria-labelledby="faq-tab-btn" tabindex="0">
+                <h1 class="mb-4">FAQ</h1>
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faqOne" aria-expanded="true" aria-controls="faqOne">
+                                How do I reserve a room?
+                            </button>
+                        </h2>
+                        <div id="faqOne" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Open the Calendar tab, select a room, choose the date/time, and submit the reservation form.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqTwo" aria-expanded="false" aria-controls="faqTwo">
+                                Can I edit a reservation?
+                            </button>
+                        </h2>
+                        <div id="faqTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Editing is not available yet. Delete the existing reservation and create a new one with the correct time.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqThree" aria-expanded="false" aria-controls="faqThree">
+                                Why am I redirected to login?
+                            </button>
+                        </h2>
+                        <div id="faqThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                You are redirected when no auth token is found. Sign in again to access dashboard features.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+
+<!-- -------------------- Scheduler Modal -------------------- -->
+<div class="modal fade" id="schedulerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="schedulerTitle">Choose reservation date</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="calendarStep">
+                    <div id="calendarContainer"></div>
+                    <div class="small text-muted mt-2">Pick the reservation date first.</div>
+                </div>
+
+                <div id="timeStep" class="d-none">
+                    <div class="alert alert-secondary py-2 mb-3" id="selectedDateLabel"></div>
+
+                    <div class="row g-2 align-items-end">
+                        <div class="col-12"><label class="form-label fw-semibold mb-1">Start time</label></div>
+                        <div class="col-6">
+                            <label class="form-label mb-1">Hour</label>
+                            <select id="startHour" class="form-select" required></select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label mb-1">Minutes</label>
+                            <select id="startMinute" class="form-select" required></select>
+                        </div>
+
+                        <div class="col-12 mt-3"><label class="form-label fw-semibold mb-1">End time</label></div>
+                        <div class="col-6">
+                            <label class="form-label mb-1">Hour</label>
+                            <select id="endHour" class="form-select" required></select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label mb-1">Minutes</label>
+                            <select id="endMinute" class="form-select" required></select>
+                        </div>
+                    </div>
+                    <div class="small text-muted mt-3">Times can be set to any minute on the same date.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="schedulerBackBtn" class="btn btn-outline-secondary d-none">Back</button>
+                <button type="button" id="schedulerNextBtn" class="btn btn-primary" disabled>Next</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="dashboard.js"></script>
+
+</body>
+</html>
